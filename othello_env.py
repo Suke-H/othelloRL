@@ -26,6 +26,8 @@ class environment:
         self.board[4, 3] = -1
 
         self.winner = 0
+        self.reward = 0
+        self.terminal = False
 
     def reset(self):
         """
@@ -111,87 +113,88 @@ class environment:
 
         return stones_num, tmpboard
 
-    def get_nextboard(self, x, y):
-        self.board
-
-    def get_reward(self, action, player_no):
+    def updata(self, action, player_no):
         """
-        報酬を返す。board更新も行う
-
+        actionをした盤に更新する
+        
+        reward:
         ゲーム中 -> 0
         勝利 -> 1
         敗北 -> -1
         石の置きミス -> -1
 
         """
-        # ゲーム中
-        if self.winner == 0:
 
-            # action(1次元配列)をx, yに変換
-            x, y = action % 8, action / 8
+        # actionをx, yに変換
+        x, y = action % 8, action / 8
 
-            # 石を何個返せる手かチェック
-            num, tmpboard = self.check_hand(x, y, player_no)
+        # 石を何個返せる手かチェック
+        num, tmpboard = self.check_hand(x, y, player_no)
 
-            # 石を返せなかったら(置きミス)報酬-1
-            if num == 0:
-                return -1
+        # 石を返せなかったら(置きミス)報酬-1
+        if num == 0:
+            self.reward = -1
 
-            # 石を返せたらboard上書きして報酬0
-            self.board = tmpboard[:, :]
-            return 0
-            
-        # 勝利で報酬1
-        elif self.winner == player_no:
-            return 1
-
-        # 敗北で報酬-1
         else:
-            return -1
+            # 石を返せたらboard上書き
+            self.board = tmpboard[:, :]
 
-    def check_terminate(self):
+            # 終了状態確認
+            check_terminate(player_no)
+                
+            # 勝利でreward 1
+            if self.winner == player_no:
+                self.reward = 1
+
+            # 敗北でreward -1 (player_noが1なら2、2なら1)
+            elif self.winner == -1 * player_no + 3:
+                self.reward = -1
+
+            # ゲーム中 or 引き分けでreward 0
+            else:
+                self.reward = 0
+
+
+    def check_terminate(self, player_no):
         """
         終了判定をする
         ・self.winnerに代入
         ・ゲーム中 -> 0, 終了 -> 1
 
         """
-        # ゲーム中だったとき
-        if self.winner == 0:
+        
+        # 盤が埋まってたら勝者を決める
+        empty_num = len(np.where(self.board == 0)[0])
+        
+        if empty_num != 0:
+            return
+        
+        # 終了状態をTrueに
+        self.terminal = True
 
-            # 盤が埋まってたら勝者を決める
-            empty_num = len(np.where(self.board == 0)[0])
-            if empty_num == 0:
-            
-                # 石の個数をカウント
-                player1_score = player2_score = 0
-                for x, y in itertools.product(range(8), range(8)):
-                    if self.board[y][x] == 1:
-                        player1_score += 1
+        # 石の個数をカウント
+        player1_score = player2_score = 0
+        for x, y in itertools.product(range(8), range(8)):
+            if self.board[y][x] == 1:
+                player1_score += 1
 
-                    elif self.board[y][x] == -1:
-                        player2_score += 1
+            elif self.board[y][x] == -1:
+                player2_score += 1
 
-                # player1の勝ち
-                if player1_score > player2_score:
-                    self.winner = 1
-                # player2の勝ち
-                elif player1_score < player2_score:
-                    self.winner = 2
-                # 引き分け
-                else:
-                    self.winner = 3
+        # player1の勝ち
+        if player1_score > player2_score:
+            self.winner = 1
 
-                # 終了したなら1を返す
-                return 1
+        # player2の勝ち
+        elif player1_score < player2_score:
+            self.winner = 2
 
-            # ゲーム中なら0を返す
-            else:
-                return 0
-
-        # 終了したなら1を返す
+        # 引き分け
         else:
-            return 1
+            self.winner = 3
+
+        
+        
 
     def step(self, action, player_no):
         """
