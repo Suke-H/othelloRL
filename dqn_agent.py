@@ -39,6 +39,8 @@ def train_model(model, x, y, optimizer, criterion):
     loss.backward()
     optimizer.step()
 
+    return loss
+
 class DQNAgent:
     """
     Multi Layer Perceptron with Experience Replay
@@ -66,10 +68,11 @@ class DQNAgent:
         self.model = DQNNet()
 
         self.criterion = nn.MSELoss()
-        self.optimizer = optim.SGD(self.model.parameters(), lr=10**(-4))
+        # self.optimizer = optim.SGD(self.model.parameters(), lr=10**(-4))
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=10**(-3))
 
-        # variables
-        # self.current_loss = 0.0
+        # ログ用
+        self.current_loss = 0.0
 
     def Q_values(self, state):
         """
@@ -136,10 +139,7 @@ class DQNAgent:
         state_minibatch, y_minibatch = np.array(state_minibatch).astype(np.float32), np.array(y_minibatch)
         state_minibatch = state_minibatch.reshape(state_minibatch.shape[0], 64)
 
-        train_model(self.model, state_minibatch, y_minibatch, self.optimizer, self.criterion)
-
-        # for log
-        # self.current_loss = self.sess.run(self.loss, feed_dict={self.x: state_minibatch, self.y_: y_minibatch})
+        self.current_loss = train_model(self.model, state_minibatch, y_minibatch, self.optimizer, self.criterion)
 
     # def load_model(self, model_path=None):
     #     if model_path:
