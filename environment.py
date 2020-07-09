@@ -201,7 +201,7 @@ class environment:
         <出力>
         次状態(next_state: 置いた後の盤｡1次元配列にする)
         報酬(reward: get_rewardにより返す)
-        ーム終了フラグ(done: check_terminateにより返す)
+        ゲーム終了フラグ(done: check_terminateにより返す)
 
         """
         # 報酬を得る、board更新も行う
