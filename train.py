@@ -1,21 +1,21 @@
 import numpy as np
+from tqdm import tqdm
 
-from catch_ball import CatchBall
-from dqn_agent import DQNAgent
+# from catch_ball import CatchBall
+# from dqn_agent import DQNAgent
 
+def train_dqn(env, agent, n_epochs):
+    # # parameters
+    # n_epochs = 10
 
-if __name__ == "__main__":
-    # parameters
-    n_epochs = 1000
-
-    # environment, agent
-    env = CatchBall()
-    agent = DQNAgent(env.enable_actions, env.name)
+    # # environment, agent
+    # env = CatchBall()
+    # agent = DQNAgent(env.enable_actions, env.name)
 
     # # variables
     # win = 0
 
-    for e in range(n_epochs):
+    for e in tqdm(range(n_epochs)):
         # # reset
         # frame = 0
         # loss = 0.0
@@ -27,19 +27,14 @@ if __name__ == "__main__":
             state_t = state_t_1
 
             # execute action in environment
-            print("a")
             action_t = agent.select_action(state_t, agent.exploration)
-            print("b")
             env.execute_action(action_t)
-            print("c")
 
             # observe environment
             state_t_1, reward_t, terminal = env.observe()
 
             # store experience
             agent.store_experience(state_t, action_t, reward_t, state_t_1, terminal)
-
-            print("d")
 
             # experience replay
             agent.experience_replay()

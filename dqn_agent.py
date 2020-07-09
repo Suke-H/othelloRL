@@ -21,7 +21,8 @@ class DQNNet(torch.nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         # 出力関数
-        return F.softmax(x, dim=0)
+        # return F.softmax(x, dim=0)
+        return x
 
 def train_model(model, x, y, optimizer, criterion):
     # model.train()
@@ -37,13 +38,6 @@ def train_model(model, x, y, optimizer, criterion):
     loss = criterion(outputs, y)
     loss.backward()
     optimizer.step()
- 
-    # _, predicted = torch.max(outputs.data, 1)
-    # print(predicted)
-    # print(y)
-    # correct = (predicted == y).sum().item()
- 
-    # print("Train Acc : %.4f" % (correct/len(y)))
 
 class DQNAgent:
     """
@@ -77,62 +71,38 @@ class DQNAgent:
         # variables
         # self.current_loss = 0.0
 
-    # def init_model(self):
-    #     # input layer (8 x 8)
-    #     self.x = tf.placeholder(tf.float32, [None, 8, 8])
-
-    #     # flatten (64)
-    #     x_flat = tf.reshape(self.x, [-1, 64])
-
-    #     # fully connected layer (32)
-    #     W_fc1 = tf.Variable(tf.truncated_normal([64, 64], stddev=0.01))
-    #     b_fc1 = tf.Variable(tf.zeros([64]))
-    #     h_fc1 = tf.nn.relu(tf.matmul(x_flat, W_fc1) + b_fc1)
-
-    #     # output layer (n_actions)
-    #     W_out = tf.Variable(tf.truncated_normal([64, self.n_actions], stddev=0.01))
-    #     b_out = tf.Variable(tf.zeros([self.n_actions]))
-    #     self.y = tf.matmul(h_fc1, W_out) + b_out
-
-    #     # loss function
-    #     self.y_ = tf.placeholder(tf.float32, [None, self.n_actions])
-    #     self.loss = tf.reduce_mean(tf.square(self.y_ - self.y))
-
-    #     # train operation
-    #     optimizer = tf.train.RMSPropOptimizer(self.learning_rate)
-    #     self.training = optimizer.minimize(self.loss)
-
-    #     # saver
-    #     self.saver = tf.train.Saver()
-
-    #     # session
-    #     self.sess = tf.Session()
-    #     self.sess.run(tf.global_variables_initializer())
-
     def Q_values(self, state):
-        # Q(state, action) of all actions
-        # stateは一つ、バッチではない
+        """
+        stateを入力にして各actionのQ(0,1,2の行動価値)を出力
+
+        stateは1つだけなので、
+        ・stateを(1, 64)にしてmodelに入力する
+        ・出力は(1,3)なので(3,)にする
+
+        """
+        # stateを(1, 64)にしてmodelに入力する
         state = state.reshape(1, 64).astype(np.float32)
         x = torch.from_numpy(state)
-        outputs = self.model(x)
-        # _, predicted = torch.max(outputs.data, 1)
-        print(outputs)
-        print(outputs.data.cpu().numpy()[0])
 
-        # return predicted.item()
+        outputs = self.model(x)
+
+        # 出力は(1,3)なので(3,)にする
         return outputs.data.cpu().numpy()[0]
 
     def select_action(self, state, epsilon):
-        # stateは一つ、バッチではない
+        """
+        epsilon-greedyによりstateから次のactionを出力
+
+        stateは1つだけなので、
+        ・stateを(1, 64)にしてmodelに入力する
+        ・出力は(1,3)なので(3,)にする
+
+        """
         if np.random.rand() <= epsilon:
-            # random
+            # ランダム
             return np.random.choice(self.enable_actions)
         else:
-            # max_action Q(state, action)
-
-            # # stateを(1, 64)にする
-            # x = state[np.newaxis, :, :]
-            # x = x.reshape(1, 64)
+            # DQNによる行動選択
             output = self.Q_values(state.flatten())
             return np.argmax(output)
 
@@ -143,31 +113,28 @@ class DQNAgent:
         state_minibatch = []
         y_minibatch = []
 
-        # sample random minibatch
+        # ミニバッチサイズ(Dがミニバッチサイズ分たまってなかったらDの長さ)
         minibatch_size = min(len(self.D), self.minibatch_size)
+        # Dからミニバッチをランダムに選んで作成
         minibatch_indexes = np.random.randint(0, len(self.D), minibatch_size)
 
         for j in minibatch_indexes:
             state_j, action_j, reward_j, state_j_1, terminal = self.D[j]
-            # action_j_index = self.enable_actions.index(action_j)
-            action_j_index = action_j
 
             y_j = self.Q_values(state_j)
 
             if terminal:
-                y_j[action_j_index] = reward_j
+                y_j[action_j] = reward_j
             else:
                 # reward_j + gamma * max_action' Q(state', action')
-                y_j[action_j_index] = reward_j + self.discount_factor * np.max(self.Q_values(state_j_1))
+                y_j[action_j] = reward_j + self.discount_factor * np.max(self.Q_values(state_j_1))
 
             state_minibatch.append(state_j)
             y_minibatch.append(y_j)
 
-        # training
-
+        # 学習
         state_minibatch, y_minibatch = np.array(state_minibatch).astype(np.float32), np.array(y_minibatch)
         state_minibatch = state_minibatch.reshape(state_minibatch.shape[0], 64)
-        print(state_minibatch.shape, y_minibatch.shape)
 
         train_model(self.model, state_minibatch, y_minibatch, self.optimizer, self.criterion)
 

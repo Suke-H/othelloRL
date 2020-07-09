@@ -8,12 +8,13 @@ import matplotlib.pyplot as plt
 
 from catch_ball import CatchBall
 from dqn_agent import DQNAgent
+from train import train_dqn
 
 
 def init():
     img.set_array(state_t_1)
     plt.axis("off")
-    return img
+    return img,
 
 
 def animate(step):
@@ -49,16 +50,17 @@ def animate(step):
 
 if __name__ == "__main__":
     # args
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--model_path")
-    parser.add_argument("-s", "--save", dest="save", action="store_true")
-    parser.set_defaults(save=False)
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-m", "--model_path")
+    # parser.add_argument("-s", "--save", dest="save", action="store_true")
+    # parser.set_defaults(save=False)
+    # args = parser.parse_args()
 
     # environmet, agent
     env = CatchBall()
     agent = DQNAgent(env.enable_actions, env.name)
-    agent.load_model(args.model_path)
+    # agent.load_model(args.model_path)
+    train_dqn(env, agent, 1000)
 
     # variables
     win, lose = 0, 0
@@ -70,11 +72,16 @@ if __name__ == "__main__":
     img = plt.imshow(state_t_1, interpolation="none", cmap="gray")
     ani = animation.FuncAnimation(fig, animate, init_func=init, interval=(1000 / env.frame_rate), blit=True)
 
-    if args.save:
+    # if args.save:
         # save animation (requires ImageMagick)
-        ani_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "tmp", "demo-{}.gif".format(env.name))
-        ani.save(ani_path, writer="imagemagick", fps=env.frame_rate)
-    else:
+        # ani_path = os.path.join(
+        #     os.path.dirname(os.path.abspath(__file__)), "tmp", "demo-{}.gif".format(env.name))
+        # ani.save(ani_path, writer="imagemagick", fps=env.frame_rate)
+    # else:
         # show animation
-        plt.show()
+    
+    plt.show()
+
+    # ani_path = os.path.join(
+    #         os.path.dirname(os.path.abspath(__file__)), "tmp", "demo-{}.gif".format(env.name))
+    # ani.save(ani_path, writer="imagemagick", fps=env.frame_rate)
