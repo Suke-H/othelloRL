@@ -71,15 +71,15 @@ python othello.py
 
 - **ゲーム開始時**
 
-<img src="data/start2.png" width="400px" title="ゲーム開始時"> 
+<img src="data/start.png" width="400px" title="ゲーム開始時"> 
 
 - **ゲーム途中時**
 
-<img src="data/playing2.png" width="400px" title="ゲーム途中時"> 
+<img src="data/playing.png" width="400px" title="ゲーム途中時"> 
 
 - **ゲーム終了時**
 
-<img src="data/end2.png" width="400px" title="ゲーム終了時"> 
+<img src="data/end.png" width="400px" title="ゲーム終了時"> 
 <br />
 <br />
 
