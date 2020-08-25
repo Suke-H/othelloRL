@@ -193,9 +193,6 @@ class environment:
         else:
             self.winner = 3
 
-        
-        
-
     def step(self, action, player_no):
         """
         <入力>

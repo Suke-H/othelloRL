@@ -6,7 +6,9 @@ import copy
 import itertools
 
 #合法手に赤丸を描画
-def indicate_stalement(board, screen, stalement):
+def indicate_stalement(board, screen):
+
+    stalement = make_stalemate(board, 1)
 
     for st in stalement:
         put_x = 30 + st[0] * 60
@@ -36,7 +38,6 @@ def check(board, mas_x, mas_y, player_no):
     #boardの(x,y)成分はboard[y][x]なので注意
     #boardは変更可能な引数なので、tmpboardにコピーする
 
-    # tmpboard = board[:, :]
     tmpboard = copy.deepcopy(board)
 
     #上、左上、左、左下、下、右下、右、右上

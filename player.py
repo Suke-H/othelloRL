@@ -5,11 +5,9 @@ import numpy as np
 from check import check
 
 #ランダムに石を置くだけのAI
-def randomAI(board, stalement, player_no):
+def randomAI(board, stalement):
 
     hand = random.choice(stalement)
-    _, board = check(board, hand[0], hand[1], player_no)
+    stones, board = check(board, hand[0], hand[1], 2)
 
     return hand, board
-
-

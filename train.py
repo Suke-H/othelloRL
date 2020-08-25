@@ -1,11 +1,10 @@
 import numpy as np
-from tqdm import tqdm
 
 def train_dqn(env, agent, n_epochs):
 
     win = 0
 
-    for e in tqdm(range(n_epochs)):
+    for e in range(n_epochs):
         # reset
         frame = 0
         loss = 0.0
@@ -39,6 +38,3 @@ def train_dqn(env, agent, n_epochs):
         if e % 100 == 0:
             print("EPOCH: {:03d}/{:03d} | WIN: {:03d} | LOSS: {:.4f} | Q_MAX: {:.4f}".format(
                 e, n_epochs - 1, win, loss / frame, Q_max / frame))
-
-    # # save model
-    # agent.save_model()

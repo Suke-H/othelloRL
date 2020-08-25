@@ -1,7 +1,6 @@
 import os
 import numpy as np
 
-
 class CatchBall:
     def __init__(self):
         # parameters
