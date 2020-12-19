@@ -10,7 +10,7 @@ from player import randomAI
 
 SCREEN_SIZE = (600, 600)  # 画面サイズ
 
-#9*9マス(1マス外枠)
+#10*10マス(1マス外枠)
 board = np.array([[0 for i in range(10)] for j in range(10)])
 
 # Pygameを初期化
@@ -43,13 +43,16 @@ while True:
         if stop:
             break
 
-        #自分がpass
+        # 自分がpassするとき
         elif not make_stalemate(board, 1):
 
-            #player1のpass表示
+            # 自分のpass表示
             draw_board(board, screen, 1, stop, True)
 
+            # 相手もpassするとき
             if not make_stalemate(board, 2):
+
+                # 終了
                 stop = True
                 draw_board(board, screen, 1, stop)
 
@@ -58,48 +61,49 @@ while True:
             else:
                 print(randomAI(board, make_stalemate(board, 2)))
 
-        #クリックで石おく→COMが石おくまでをここで行う
+        # 左クリックで石おく
         elif event.type == MOUSEBUTTONDOWN and event.button == 1:
 
             ###自分のターン###
 
             x, y = event.pos
-
-            #マスの場所
+            # マスの場所
             mas_x = x // 60
             mas_y = y // 60
 
             print(1, mas_x, mas_y)
 
-            #枠外を押していたらbreak
+            # 枠外を押していたらbreak
             if mas_x <= 0 or mas_x >= 9 or mas_y <= 0 or mas_y >= 9:
                 break
 
-            #合法手じゃなかったらbreak
+            # 合法手じゃなかったらbreak
             if [mas_x, mas_y] not in make_stalemate(board, 1):
                 break
 
-            #それ以外ならboardを動かす
+            # 行動をboardに反映させる
             print(1, [mas_x, mas_y])
             stones, board = check(board, mas_x, mas_y, 1)
             print(board[1:9, 1:9])
 
-            #board描画
+            # board描画
             draw_board(board, screen, 2, stop)
-            pygame.display.update()  # 画面を更新
-
+            # 画面を更新
+            pygame.display.update()  
 
             #待ち時間
             print(pygame.time.delay(2000))
 
             ###相手のターン###
 
-            #pass
+            # pass
             if not make_stalemate(board, 2):
-                #player2のpass表示
+                # player2のpass表示
                 draw_board(board, screen, 2, stop, True)
                 break
 
+            # 相手の行動
+            
             hand, board = randomAI(board, make_stalemate(board, 2))
             print(2, hand)
             print(board[1:9, 1:9])

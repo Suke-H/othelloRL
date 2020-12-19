@@ -6,7 +6,17 @@ import itertools
 
 from init_game import init_game
 
-def put_stone(board, mas_x, mas_y, player, screen):
+#合法手に赤丸を描画
+def indicate_stalement(big_board, screen):
+
+    stalement = make_stalemate(big_board, 1)
+
+    for st in stalement:
+        put_x = 30 + st[0] * 60
+        put_y = 30 + st[1] * 60
+        pygame.draw.circle(screen, (255,0,0), (put_x,put_y), 20, 1)
+
+def put_stone(big_board, mas_x, mas_y, player, screen):
 
     #石を置く座標
     put_x = 30 + mas_x * 60
@@ -20,22 +30,22 @@ def put_stone(board, mas_x, mas_y, player, screen):
     else:
         pygame.draw.circle(screen, (255,255,255), (put_x,put_y), 20, 0)
 
-def draw_board(board, screen, player_no, stop, pass_flag=False):
+def draw_board(big_board, screen, player_no, stop, pass_flag=False):
     #一度塗りつぶす
-    init_game(board, screen, player_no, True)
+    init_game(big_board, screen, player_no, True)
 
     #boardを見て石を置き直す
     for x, y in itertools.product(range(1, 9), range(1, 9)):
-        if board[y][x] != 0:
-            put_stone(board, x, y, board[y][x], screen)
+        if big_board[y][x] != 0:
+            put_stone(big_board, x, y, big_board[y][x], screen)
 
     #石の個数をカウント
     player1_score = player2_score = 0
     for x, y in itertools.product(range(1, 9), range(1, 9)):
-        if board[y][x] == 1:
+        if big_board[y][x] == 1:
             player1_score += 1
 
-        elif board[y][x] == 2:
+        elif big_board[y][x] == 2:
             player2_score += 1
 
     #スコア表示
@@ -78,3 +88,12 @@ def draw_board(board, screen, player_no, stop, pass_flag=False):
 
     #設定したテキスト表示
     screen.blit(turn_text, (345, 558))
+
+def board_up(board):
+    tmp_board = np.zeros((10,10))
+    tmp_board[1:9, 1:9] = board
+
+    return tmp_board
+
+def board_down(big_board):
+    return big_board[1:9, 1:9]
