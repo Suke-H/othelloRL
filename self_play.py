@@ -1,7 +1,7 @@
 import numpy as np
 
 from othello_env import othello_env
-from player import random_agent 
+from player import random_agent, DQNAgent
 
 def self_play(env, agent, n_epochs):
     """
@@ -40,7 +40,12 @@ def self_play(env, agent, n_epochs):
                 # 合法手を相手に変える
                 legal_hands = env.legal_hands[2-player_no]
 
-                a = input()
+                # 経験を蓄積
+                agent.store_experience(state_t, action_t, reward_t, state_t_1, terminal)
+
+                # experience replay
+                agent.experience_replay()
+
 
     print(state_t_1)
 
@@ -49,7 +54,8 @@ if __name__ == "__main__":
     # 環境
     env = othello_env()
     # エージェント
-    agent = random_agent()
+    # agent = random_agent()
+    agent = DQNAgent()
 
     self_play(env, agent, 1)
 
