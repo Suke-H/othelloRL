@@ -1,19 +1,54 @@
 import pygame
 from pygame.locals import *
 import sys
-
+import numpy as np
 import itertools
 
-from init_game import init_game
+def init_game(board, screen, player_no, flag=False):
+
+    screen.fill((0,205,0))   # 画面を緑色で塗りつぶす
+
+    for i in range(9):
+        #タテ線
+        pygame.draw.line(screen, (0,0,0), (60+60*i,60), (60+60*i,540))
+        #ヨコ線
+        pygame.draw.line(screen, (0,0,0), (60,60+60*i), (540,60+60*i))
+
+    #黒点
+    pygame.draw.circle(screen, (0,0,0), (180,180), 4, 0)
+    pygame.draw.circle(screen, (0,0,0), (420,180), 4, 0)
+    pygame.draw.circle(screen, (0,0,0), (180,420), 4, 0)
+    pygame.draw.circle(screen, (0,0,0), (420,420), 4, 0)
+
+    #得点の黒石、白石
+    pygame.draw.circle(screen, (0,0,0), (90,570), 15, 0)
+    pygame.draw.circle(screen, (255,255,255), (210,570), 15, 0)
+
+    if flag:
+        return
+
+    #最初に置く石
+    board[3][3] = 1
+    board[3][4] = 2
+    board[4][3] = 2
+    board[4][4] = 1
+
+    # #番兵
+    # for i in range(10):
+    #     #ヨコ
+    #     board[0][i] = board[9][i] = -1
+    #     #タテ
+    #     board[i][0] = board[i][9] = -1
 
 #合法手に赤丸を描画
-def indicate_stalement(big_board, screen):
+def indicate_legal_hands(board, screen, legal_hands):
 
-    stalement = make_stalemate(big_board, 1)
+    big_board = board_up(board)
 
-    for st in stalement:
-        put_x = 30 + st[0] * 60
-        put_y = 30 + st[1] * 60
+    for hand in legal_hands:
+        x, y = int(hand % 8)+1, int(hand // 8)+1
+        put_x = 30 + x * 60
+        put_y = 30 + y * 60
         pygame.draw.circle(screen, (255,0,0), (put_x,put_y), 20, 1)
 
 def put_stone(big_board, mas_x, mas_y, player, screen):
@@ -30,7 +65,9 @@ def put_stone(big_board, mas_x, mas_y, player, screen):
     else:
         pygame.draw.circle(screen, (255,255,255), (put_x,put_y), 20, 0)
 
-def draw_board(big_board, screen, player_no, stop, pass_flag=False):
+def draw_board(board, screen, player_no, stop, pass_flag=False):
+
+    big_board = board_up(board)
     #一度塗りつぶす
     init_game(big_board, screen, player_no, True)
 
