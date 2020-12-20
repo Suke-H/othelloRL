@@ -1,7 +1,9 @@
 import numpy as np
+import torch
 
 from othello_env import othello_env
 from player import random_agent, DQNAgent
+
 
 def train(env, agent, n_epochs):
     """
@@ -32,9 +34,15 @@ def train(env, agent, n_epochs):
 
                 # pass
                 if len(legal_hands) == 0:
-                    # 合法手を相手に変える
-                    legal_hands = env.legal_hands[2-player_no]
-                    continue
+
+                    if player_no == 1:
+                        # 合法手を相手に変える
+                        legal_hands = env.legal_hands[2-player_no]
+                        continue
+
+                    else:
+                        terminal = True
+                        break
 
                 # エージェントが行動を決定
                 action_t = agent.select_action(state_t, legal_hands)
@@ -50,9 +58,6 @@ def train(env, agent, n_epochs):
                 # 経験を蓄積
                 agent.store_experience(state_t, action_t, reward_t, state_t_1, terminal)
 
-                # experience replay
-                agent.experience_replay()
-
                 # for log
                 frame += 1
                 loss += agent.current_loss
@@ -60,8 +65,14 @@ def train(env, agent, n_epochs):
                 if reward_t == 1:
                     win += 1
 
-        print("EPOCH: {:03d}/{:03d} | WIN: {:03d} | LOSS: {:.4f} | Q_MAX: {:.4f}".format(
-        epoch, n_epochs, win, loss / frame, Q_max / frame))
+        if epoch % 16 == 0 and epoch != 0:
+            # experience replay
+            agent.experience_replay()
+            # 保存
+            torch.save(agent.model.state_dict(), 'data/model_'+str(epoch)+'.pth')
+            # log
+            print("EPOCH: {:05d}/{:05d} | WIN: {:03d} | LOSS: {:.4f} | Q_MAX: {:.4f}".format(
+                    epoch, n_epochs, win, loss / frame, Q_max / frame))
 
 
     print(state_t_1)
@@ -74,5 +85,4 @@ if __name__ == "__main__":
     # agent = random_agent()
     agent = DQNAgent()
 
-    train(env, agent, 5)
-
+    train(env, agent, 16000)

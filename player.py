@@ -12,35 +12,65 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")
+
+k = 192
+fcl_units = 256
 
 # モデル定義
 class DQNNet(torch.nn.Module):
+
     def __init__(self):
         super(DQNNet, self).__init__()
-        self.fc1 = torch.nn.Linear(64, 1000)
-        self.fc2 = torch.nn.Linear(1000, 1000)
-        self.fc3 = torch.nn.Linear(1000, 1000)
-        self.fc4 = torch.nn.Linear(1000, 64)
- 
+        self.conv1 = nn.Conv2d(2, k, kernel_size=3, padding=1)
+        self.bn1 = nn.BatchNorm2d(k)
+        self.conv2 = nn.Conv2d(k, k, kernel_size=3, padding=1)
+        self.bn2 = nn.BatchNorm2d(k)
+        self.conv3 = nn.Conv2d(k, k, kernel_size=3, padding=1)
+        self.bn3 = nn.BatchNorm2d(k)
+        self.conv4 = nn.Conv2d(k, k, kernel_size=3, padding=1)
+        self.bn4 = nn.BatchNorm2d(k)
+        self.conv5 = nn.Conv2d(k, k, kernel_size=3, padding=1)
+        self.bn5 = nn.BatchNorm2d(k)
+        self.conv6 = nn.Conv2d(k, k, kernel_size=3, padding=1)
+        self.bn6 = nn.BatchNorm2d(k)
+        self.conv7 = nn.Conv2d(k, k, kernel_size=3, padding=1)
+        self.bn7 = nn.BatchNorm2d(k)
+        self.conv8 = nn.Conv2d(k, k, kernel_size=3, padding=1)
+        self.bn8 = nn.BatchNorm2d(k)
+        self.conv9 = nn.Conv2d(k, k, kernel_size=3, padding=1)
+        self.bn9 = nn.BatchNorm2d(k)
+        self.conv10 = nn.Conv2d(k, k, kernel_size=3, padding=1)
+        self.bn10 = nn.BatchNorm2d(k)
+        self.fcl1 = nn.Linear(k * 64, fcl_units)
+        self.fcl2 = nn.Linear(fcl_units, 64)
+
     def forward(self, x):
-        # テンソルのリサイズ: (N, 1, 2, 1) --> (N, 2)
-        # x = x.view(-1, 2)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = self.fc4(x)
-        # 出力関数
-        # return F.softmax(x, dim=0)
-        return x
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = F.relu(self.bn4(self.conv4(x)))
+        x = F.relu(self.bn5(self.conv5(x)))
+        x = F.relu(self.bn6(self.conv6(x)))
+        x = F.relu(self.bn7(self.conv7(x)))
+        x = F.relu(self.bn8(self.conv8(x)))
+        x = F.relu(self.bn9(self.conv9(x)))
+        x = F.relu(self.bn10(self.conv10(x)))
+        x = F.relu(self.fcl1(x.view(-1, k * 64)))
+        x = self.fcl2(x)
+        return x.tanh()
 
 def train_model(model, x, y, optimizer, criterion):
     # model.train()
     #scheduler.step()
  
-    # images, labels = images.to(device), labels.to(device)
+    # stateをCNN用に変換
+    x = state_transform(x)
 
     x = torch.from_numpy(x)
     y = torch.from_numpy(y)
+    x, y = x.to(device), y.to(device)
  
     optimizer.zero_grad()
     outputs = model(x)
@@ -49,6 +79,33 @@ def train_model(model, x, y, optimizer, criterion):
     optimizer.step()
 
     return loss
+
+def state_transform(state):
+    """
+    状態（ボード）をCNNの入力用に変換
+    
+    入力
+    ・(N,8,8)
+    ・0が空、1がplayer1の石、2がplayer2の石
+
+    出力
+    ・(N,2,8,8)
+    ・player1と2の石(1)を2チャンネルで構成
+    """
+
+    if len(state.shape) == 2:
+        tmp_state = np.copy(state)
+        tmp_state = tmp_state.reshape(1, 8, 8)
+
+    else:
+        tmp_state = np.copy(state)
+
+    state_1 = np.where(tmp_state==1, 1, 0)
+    state_2 = np.where(tmp_state==2, 1, 0)
+    tmp_state = np.array([state_1, state_2], dtype=np.float32)
+    tmp_state = tmp_state.transpose(1, 0, 2, 3)
+
+    return tmp_state
 
 # # ランダムに石を置くだけのAI
 # def randomAI(board, stalement):
@@ -66,7 +123,6 @@ class random_agent:
     #     self.n_actions = len(self.enable_actions)
 
     def select_action(self, state, legal_hands):
-
         return random.choice(legal_hands)
 
 
@@ -81,10 +137,9 @@ class DQNAgent:
         # self.environment_name = environment_name
         # self.enable_actions = enable_actions
         # self.n_actions = len(self.enable_actions)
-        self.minibatch_size = 32
-        self.replay_memory_size = 1000
-        self.learning_rate = 0.001
-        self.discount_factor = 0.9
+        self.minibatch_size = 256
+        self.replay_memory_size = 131072
+        self.discount_factor = 0.99
         self.epsilon = 0.1
         # self.model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
         # self.model_name = "{}.ckpt".format(self.environment_name)
@@ -94,11 +149,13 @@ class DQNAgent:
 
         # model
         # self.init_model()
-        self.model = DQNNet()
+        self.model = DQNNet().to(device)
 
         self.criterion = nn.MSELoss()
+        # self.criterion = nn.CrossEntropyLoss()
         # self.optimizer = optim.SGD(self.model.parameters(), lr=10**(-4))
-        self.optimizer = optim.RMSprop(self.model.parameters(), lr=10**(-3))
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=10**(-5))
+        # self.optimizer = optim.Adam(self.model.parameters(), lr=10**(-2))
 
         # ログ用
         self.current_loss = 0.0
@@ -108,16 +165,11 @@ class DQNAgent:
         stateを入力にして各actionのQ(0~63の行動価値)を出力
 
         """
-        # # stateを(1, 2, 8, 8)にする
-        # state_1 = np.where(state==1, 1, 0)
-        # state_2 = np.where(state==2, 1, 0)
-        # x = np.array([state_1, state_2], dtype=np.float32)
-        # x = x.reshape(1, 2, 8, 8)
-
-        # stateを(1, 64)にする
-        x = state.reshape(1, 64).astype(np.float32)
+        # stateをCNN用に変換
+        x = state_transform(state)
 
         x = torch.from_numpy(x)
+        x = x.to(device)
         outputs = self.model(x)
 
         # 出力は(1,64)なので(64,)にする
@@ -141,6 +193,7 @@ class DQNAgent:
             return np.argmax(output)
 
     def store_experience(self, state, action, reward, state_1, terminal):
+        # self.D.append((state_transform(state), action, reward, state_transform(state_1), terminal))
         self.D.append((state, action, reward, state_1, terminal))
 
     def experience_replay(self):
@@ -168,6 +221,7 @@ class DQNAgent:
 
         # 学習
         state_minibatch, y_minibatch = np.array(state_minibatch).astype(np.float32), np.array(y_minibatch)
-        state_minibatch = state_minibatch.reshape(state_minibatch.shape[0], 64)
+        # state_minibatch = state_minibatch.reshape(state_minibatch.shape[0], 64)
 
         self.current_loss = train_model(self.model, state_minibatch, y_minibatch, self.optimizer, self.criterion)
+
