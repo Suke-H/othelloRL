@@ -2,8 +2,6 @@ import numpy as np
 import itertools
 import copy
 
-from check import make_stalemate
-
 class othello_env:
     def __init__(self):
         """

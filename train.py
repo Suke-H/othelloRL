@@ -3,25 +3,32 @@ import numpy as np
 from othello_env import othello_env
 from player import random_agent, DQNAgent
 
-def self_play(env, agent, n_epochs):
+def train(env, agent, n_epochs):
     """
     players(AI)だけでゲーム
     """
 
-    env.reset()
-    state_t_1, reward_t, terminal = env.observe()
-    legal_hands = env.legal_hands[0]
+    win = 0
 
     for epoch in range(n_epochs):
 
-        while not terminal:
+        # reset
+        frame = 0
+        loss = 0.0
+        Q_max = 0.0
+        env.reset()
 
+        state_t_1, reward_t, terminal = env.observe()
+        legal_hands = env.legal_hands[0]
+
+        while not terminal:
+            
             for player_no in [1,2]:
                 # 状態を更新
                 state_t = state_t_1
 
-                print(state_t)
-                print(legal_hands)
+                # print(state_t)
+                # print(legal_hands)
 
                 # pass
                 if len(legal_hands) == 0:
@@ -46,6 +53,16 @@ def self_play(env, agent, n_epochs):
                 # experience replay
                 agent.experience_replay()
 
+                # for log
+                frame += 1
+                loss += agent.current_loss
+                Q_max += np.max(agent.Q_values(state_t))
+                if reward_t == 1:
+                    win += 1
+
+        print("EPOCH: {:03d}/{:03d} | WIN: {:03d} | LOSS: {:.4f} | Q_MAX: {:.4f}".format(
+        epoch, n_epochs, win, loss / frame, Q_max / frame))
+
 
     print(state_t_1)
 
@@ -57,5 +74,5 @@ if __name__ == "__main__":
     # agent = random_agent()
     agent = DQNAgent()
 
-    self_play(env, agent, 1)
+    train(env, agent, 5)
 
