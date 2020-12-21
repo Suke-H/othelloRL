@@ -37,7 +37,7 @@ env = othello_env()
 agent = DQNAgent()
 
 # モデル読み込み
-agent.model.load_state_dict(torch.load('data/model_96.pth', map_location=torch.device('cpu')))
+agent.model.load_state_dict(torch.load('data/model_15984.pth', map_location=torch.device('cpu')))
 
 env.reset()
 state_t_1, reward_t, terminal = env.observe()
