@@ -2,8 +2,6 @@ import numpy as np
 import itertools
 import copy
 
-from check import make_stalemate
-
 class othello_env:
     def __init__(self):
         """
@@ -105,6 +103,7 @@ class othello_env:
 
             # 一歩進んで
             pwd += direct
+
             # 相手の石じゃなくなるまでdirへ移動し続ける
             while tmpboard[pwd[1]][pwd[0]] == 3 - player_no:
                 pwd += direct
@@ -151,6 +150,7 @@ class othello_env:
 
             # 一歩進んで
             pwd += direct
+
             # 相手の石じゃなくなるまでdirへ移動し続ける
             while tmpboard[pwd[1]][pwd[0]] == 3 - player_no:
                 pwd += direct
@@ -242,4 +242,3 @@ class othello_env:
         環境を観察
         """
         return self.board, self.reward, self.terminal
-

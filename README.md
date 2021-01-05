@@ -3,69 +3,40 @@ othelloRL
 
 強化学習を用いたオセロAIの作成を目的とする．
 <br />
-<br />
-<br />
 
-# 現在の進捗
-
-### 1. 簡単なゲーム環境でDQN実装
-### 2. オセロゲームの作成
-<br />
-<br />
 
 Pythonの必須ライブラリ (動作確認時のバージョン)
 -----
 - numpy (1.18.1)
 - matplotlib (3.1.3)
-- pytorch (1.3.1)
+- pytorch (1.6.0)
 - pygame (1.9.6)
 <br />
 <br />
 
-
-## 1. 簡単なゲーム環境でDQN実装
-<br />
-
-https://github.com/algolab-inc/tf-dqn-simple のコードをpytorchで動作するように書き換えた．
-
-`catch-ball`と呼ばれる簡単なゲーム環境を学習するための強化学習アルゴリズムとして，DQN(Deep Q Network)の原理を利用している．
-
-(参考：http://blog.algolab.jp/post/2016/08/01/tf-dqn-simple-1/)
-<br />
-<br />
-
-使用方法
+参考
 -----
-`data`フォルダを作成し，
-
-```
-python test.py
-```
-
-を実行するとDQNが学習を始め，学習終了後にテストを行う．
-テスト時は，DQNがゲームをしている結果がアニメーションとしてGIF形式で`data`フォルダに保存される．
-
-**1000エポックDQNを学習させた結果のDQNの動作アニメーション**
-
-<img src="data/test.gif" width="400px" title="DQNのアニメーション">  
+https://github.com/algolab-inc/tf-dqn-simple 
 <br />
-<br />
+https://github.com/TadaoYamaoka/creversi_gym/blob/master/creversi_gym/dqn.py
 
-## 2. オセロゲームの作成
-
-`pygame`によりオセロゲームを作成した．
-現在は対戦相手には`RandomAI`(合法手からランダムに一手を選択)のみ実装している．
-<br />
-<br />
 
 使用方法
 -----
 
 ```
-python othello.py
+python othello_game.py
 ```
 
 を実行するとオセロを始めることができる．
+左クリックで石を置く．
+
+```
+python self_game.py
+```
+
+だとAIだけの対戦が見られる．
+左クリックで試合を動かすことができる
 
 **実際のオセロゲームの動作**
 
@@ -83,6 +54,3 @@ python othello.py
 <br />
 <br />
 
-# 今後の課題
-- オセロゲームを強化学習アルゴリズムに当てはめるための，`environment`と`agent`の設計
-- オセロゲームに活用できる強化学習アルゴリズムの実装
