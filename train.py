@@ -20,6 +20,10 @@ def train(env, agent, n_epochs):
         Q_max = 0.0
         env.reset()
 
+        # passしたらTrueにし、passでなかったらFalseに戻す
+        # Trueの時に再びpassが起きたらゲーム終了
+        pass_flag = False
+
         state_t_1, reward_t, terminal = env.observe()
         legal_hands = env.legal_hands[0]
 
@@ -32,17 +36,25 @@ def train(env, agent, n_epochs):
                 # print(state_t)
                 # print(legal_hands)
 
-                # pass
+                # passの時
                 if len(legal_hands) == 0:
 
-                    if player_no == 1:
-                        # 合法手を相手に変える
-                        legal_hands = env.legal_hands[2-player_no]
-                        continue
+                    # passフラグが立ってたらゲーム終了
+                    if pass_flag:
+                        terminal = True
+                        print("パスで終了")
+                        break
 
                     else:
-                        terminal = True
-                        break
+                        # 合法手を相手に変える
+                        env.make_legal_hands(3-player_no)
+                        legal_hands = env.legal_hands[2-player_no]
+                        # passフラグを立てる
+                        pass_flag = True
+                        print("pass")
+                        continue
+
+                pass_flag = False
 
                 # エージェントが行動を決定
                 action_t = agent.select_action(state_t, legal_hands)
@@ -65,6 +77,8 @@ def train(env, agent, n_epochs):
                 if reward_t == 1:
                     win += 1
 
+        print("epoch: {}".format(epoch))
+
         if epoch % 16 == 0 and epoch != 0:
             # experience replay
             agent.experience_replay()
@@ -74,9 +88,6 @@ def train(env, agent, n_epochs):
             print("EPOCH: {:05d}/{:05d} | WIN: {:03d} | LOSS: {:.4f} | Q_MAX: {:.4f}".format(
                     epoch, n_epochs, win, loss / frame, Q_max / frame))
 
-
-    print(state_t_1)
-
 if __name__ == "__main__":
 
     # 環境
@@ -85,4 +96,4 @@ if __name__ == "__main__":
     # agent = random_agent()
     agent = DQNAgent()
 
-    train(env, agent, 16000)
+    train(env, agent, 17)

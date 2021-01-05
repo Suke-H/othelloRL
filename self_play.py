@@ -39,17 +39,21 @@ agent = DQNAgent()
 # モデル読み込み
 agent.model.load_state_dict(torch.load('data/model_15984.pth', map_location=torch.device('cpu')))
 
+# 状態等の準備
 env.reset()
 state_t_1, reward_t, terminal = env.observe()
 legal_hands = env.legal_hands[0]
+player_no = 1
+
+# passしたらTrueにし、passでなかったらFalseに戻す
+# Trueの時に再びpassが起きたらゲーム終了
+pass_flag = False
 
 # board描画
 draw_board(state_t_1, screen, 1, stop)
 indicate_legal_hands(state_t_1, screen, legal_hands)
 
 pygame.display.update()  # 画面を更新
-
-player_no = 1
 
 # ゲームループ
 while True:
@@ -68,23 +72,34 @@ while True:
                 # 終了表示
                 draw_board(state_t_1, screen, 1, stop)
                 # 画面を更新
-                pygame.display.update()  
+                pygame.display.update()
 
-            # 状態を更新
-            state_t = state_t_1
-
-            print(state_t)
-            print(legal_hands)
-
-            # pass
+            # pass処理
             if len(legal_hands) == 0:
-                # 合法手を相手に変える
-                legal_hands = env.legal_hands[2-player_no]
-                # pass表示
-                draw_board(state_t, screen, player_no, stop, True)
-                # 画面を更新
-                pygame.display.update()  
-                continue
+
+                # passフラグが立ってたらゲーム終了
+                if pass_flag:
+                    terminal = True
+                    # 終了表示
+                    draw_board(state_t_1, screen, 1, stop)
+                    # 画面を更新
+                    pygame.display.update()
+
+                else:
+                    # 合法手を相手に変える
+                    env.make_legal_hands(3-player_no)
+                    legal_hands = env.legal_hands[2-player_no]
+                    # passフラグを立てる
+                    pass_flag = True
+                    # pass表示
+                    draw_board(state_t, screen, player_no, stop, pass_flag)
+                    # 画面を更新
+                    pygame.display.update()
+                    break
+
+            pass_flag = False
+
+            
 
             # エージェントが行動を決定
             action_t = agent.select_action(state_t, legal_hands)
@@ -98,7 +113,7 @@ while True:
             legal_hands = env.legal_hands[2-player_no]
 
             # board描画
-            draw_board(state_t_1, screen, player_no, stop)
+            draw_board(state_t_1, screen, 3-player_no, stop)
             indicate_legal_hands(state_t_1, screen, legal_hands)
             # 画面を更新
             pygame.display.update()

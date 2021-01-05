@@ -12,6 +12,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
+import pfrl
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu")
 
@@ -225,3 +227,23 @@ class DQNAgent:
 
         self.current_loss = train_model(self.model, state_minibatch, y_minibatch, self.optimizer, self.criterion)
 
+# A2C
+def A2C():
+    model = DQNNet().to(device)
+    criterion = nn.MSELoss()
+    optimizer = optim.RMSprop(self.model.parameters(), lr=10**(-5))
+
+    gpu = -1
+
+    agent = a2c.A2C(
+            model,
+            optimizer,
+            gamma=0.9,
+            gpu=gpu,
+            num_processes=1,
+            update_steps=5,
+            phi=lambda x: x,
+            use_gae=False,
+            tau=0.95,
+            max_grad_norm=None,
+        )
