@@ -113,7 +113,7 @@ def draw_board(board, screen, player_no, stop, pass_flag=False):
                 turn_text = sysfont.render("PLAYER1 PASS!", True, (0,0,0))
 
             else:
-                turn_text = sysfont.render("PLAYER2 PASS!", True, (0,0,0))
+                turn_text = sysfont.render("PLAYER2 PASS!", True, (255,255,255))
 
         #どっちのターンか表示
         else:

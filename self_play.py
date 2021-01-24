@@ -74,6 +74,9 @@ while True:
                 # 画面を更新
                 pygame.display.update()
 
+            # 状態を更新
+            state_t = state_t_1
+
             # pass処理
             if len(legal_hands) == 0:
 
@@ -84,6 +87,7 @@ while True:
                     draw_board(state_t_1, screen, 1, stop)
                     # 画面を更新
                     pygame.display.update()
+                    break
 
                 else:
                     # 合法手を相手に変える
@@ -98,8 +102,6 @@ while True:
                     break
 
             pass_flag = False
-
-            
 
             # エージェントが行動を決定
             action_t = agent.select_action(state_t, legal_hands)

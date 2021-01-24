@@ -4,7 +4,7 @@ from othello_env import othello_env
 from collect_4_env import collect_4_env
 from player import random_agent 
 
-def self_play(env, agent, n_epochs):
+def train(env, agent, n_epochs):
     """
     players(AI)だけでゲーム
     """
